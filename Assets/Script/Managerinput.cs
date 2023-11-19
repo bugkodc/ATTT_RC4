@@ -1,19 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.SceneManagement;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using UnityEngine.TextCore.Text;
 using System.Text;
 using System;
-using Unity.VisualScripting;
-using UnityEngine.EventSystems;
-using System.IO;
-using System.Security.Cryptography;
-using UnityEngine.Windows;
-using System.Linq;
-using System.Text.RegularExpressions;
+using SFB;
+using System.Collections;
+using UnityEngine.SceneManagement;
 
 public class Managerinput : MonoBehaviour
 {
@@ -24,9 +16,9 @@ public class Managerinput : MonoBehaviour
     [SerializeField] public Button _SelectFile_Button;
     [SerializeField] public Button _EncryptButton;
     [SerializeField] public Button _DecryptButton;
-    [SerializeField] public Button _confirmButton;
     private string _key;
     private string _thongDiep;
+    public Text filePathText;
     #region start
     private void Start()
     {
@@ -37,22 +29,26 @@ public class Managerinput : MonoBehaviour
     }
     #endregion
     #region input file
+    [Obsolete]
     private void SelectFile()
     {
-        string filePath = UnityEditor.EditorUtility.OpenFilePanel("Select File", "", "");
-
-        if (!string.IsNullOrEmpty(filePath))
+        var paths = StandaloneFileBrowser.OpenFilePanel("Title", "", "txt", false);
+        if (paths.Length > 0)
         {
-            using (StreamReader reader = new StreamReader(filePath))
-            {
-                string text = reader.ReadToEnd();
-                _ThongDiep_Input.text = text;
-            }
+            StartCoroutine(OutputRoutine(new System.Uri(paths[0]).AbsoluteUri));
         }
+
+    }
+    private IEnumerator OutputRoutine(string url)
+    {
+        var loader = new WWW(url);
+        yield return loader;
+        string textt = loader.text;
+        _ThongDiep_Input.text = textt;
     }
     #endregion
     #region ramdomkey
-   private void GenerateRandomKey()
+    private void GenerateRandomKey()
    {
         _key = GenerateRandomKeyOfLength(16); // Đặt độ dài key tùy ý, ở đây là 16
         _Key_Input.text = _key;
@@ -72,28 +68,49 @@ public class Managerinput : MonoBehaviour
     private void EncryptFile()
     {
         _key = _Key_Input.text;
-        _thongDiep = _ThongDiep_Input.text;
+        if (_key.Length != 0)
+        {
+            _thongDiep = _ThongDiep_Input.text;
+            try
+            {
+                byte[] encryptedBytes = RC4.Encrypt(Encoding.UTF8.GetBytes(_thongDiep), Encoding.UTF8.GetBytes(_key));
+                string encryptedText = Convert.ToBase64String(encryptedBytes);
 
-        byte[] encryptedBytes = RC4.Encrypt(Encoding.UTF8.GetBytes(_thongDiep), Encoding.UTF8.GetBytes(_key));
-        string encryptedText = Convert.ToBase64String(encryptedBytes);
-
-        _ThongDiep_Output.text = encryptedText;
+                _ThongDiep_Output.text = encryptedText;
+            }
+            catch (FormatException)
+            {
+                _ThongDiep_Output.text = "Thông điệp sai không thể mã hóa";
+            }
+        }
     }
     #endregion
     #region DecryptFile
     private void DecryptFile()
     {
         _key = _Key_Input.text;
-        _thongDiep = _ThongDiep_Input.text;
+        if (_key.Length != 0) {
+            _thongDiep = _ThongDiep_Input.text;
+            try
+            {
+                byte[] encryptedBytes = Convert.FromBase64String(_thongDiep);
+                byte[] decryptedBytes = RC4.Decrypt(encryptedBytes, Encoding.UTF8.GetBytes(_key));
+                string decryptedText = Encoding.UTF8.GetString(decryptedBytes);
 
-        byte[] encryptedBytes = Convert.FromBase64String(_thongDiep);
-        byte[] decryptedBytes = RC4.Decrypt(encryptedBytes, Encoding.UTF8.GetBytes(_key));
-        string decryptedText = Encoding.UTF8.GetString(decryptedBytes);
-
-        _ThongDiep_Output.text = decryptedText;
+                _ThongDiep_Output.text = decryptedText;
+            }
+            catch (FormatException)
+            {
+                _ThongDiep_Output.text = "Thông điệp sai không thể giải mã (không thuộc Base-64)";
+            }
+        }   
     }
-    #endregion
+    public void EXT()
+    {
+        Application.Quit();
+    }
 }
+    #endregion
 #region RC4
 public static class RC4
 {
