@@ -6,6 +6,15 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
+    path: Assets/Scenes/RC4.unity
     guid: 2cda990e2423bbf4892e6590ba056729
+  - enabled: 1
+    path: Assets/Scenes/dangnhap.unity
+    guid: 679002b8e2612554aac00f25ab33da92
+  - enabled: 1
+    path: Assets/Scenes/key.unity
+    guid: fadb3a79e01ab6346876cecdfc65a194
+  - enabled: 1
+    path: Assets/Scenes/messger.unity
+    guid: f16c3cb372330fa41adda86b743c4075
   m_configObjects: {}

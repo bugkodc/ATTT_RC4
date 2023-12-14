@@ -16,6 +16,7 @@ public class Managerinput : MonoBehaviour
     [SerializeField] public Button _SelectFile_Button;
     [SerializeField] public Button _EncryptButton;
     [SerializeField] public Button _DecryptButton;
+    [SerializeField] public Button _messenger;
     private string _key;
     private string _thongDiep;
     public Text filePathText;
@@ -26,8 +27,13 @@ public class Managerinput : MonoBehaviour
         _SelectFile_Button.onClick.AddListener(SelectFile);
         _EncryptButton.onClick.AddListener(EncryptFile);
         _DecryptButton.onClick.AddListener(DecryptFile);
+        _messenger.onClick.AddListener(Messenger);
     }
     #endregion
+    public void Messenger()
+    {
+        SceneManager.LoadScene("dangnhap");
+    }
     #region input file
     [Obsolete]
     private void SelectFile()
